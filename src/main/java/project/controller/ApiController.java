@@ -1,5 +1,6 @@
 package project.controller;
 
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +14,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.extern.slf4j.Slf4j;
+import project.dto.AccompanyDto;
 import project.dto.NoticeDto;
 import project.dto.QnaCommentDto;
 import project.dto.QnaDto;
@@ -87,26 +90,27 @@ public class ApiController {
 	}
 
 	// QNA 리스트 조회
-	@GetMapping("/api/qnalist")
-	public ResponseEntity<List<QnaDto>> listQna() throws Exception {
-		List<QnaDto> QnaDto = projectService.listQnaDto();
-		if (QnaDto == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(QnaDto);
-		}
-	}
-
-	// QNA 상세페이지 조회
-//	@GetMapping("/api/qna/{qnaIdx}")
-//	public ResponseEntity<QnaDto> qnaDetail(@PathVariable("qnaIdx") int qnaIdx) throws Exception {
-//		QnaDto qnaDto = projectService.qnaDetail(qnaIdx);
-//		if (qnaDto == null) {
+//	@GetMapping("/api/qnalist")
+//	public ResponseEntity<List<QnaDto>> listQna() throws Exception {
+//		List<QnaDto> QnaDto = projectService.listQnaDto();
+//		if (QnaDto == null) {
 //			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 //		} else {
-//			return ResponseEntity.status(HttpStatus.OK).body(qnaDto);
+//			return ResponseEntity.status(HttpStatus.OK).body(QnaDto);
 //		}
 //	}
+
+	// QNA 상세페이지 조회
+	// @GetMapping("/api/qna/{qnaIdx}")
+	// public ResponseEntity<QnaDto> qnaDetail(@PathVariable("qnaIdx") int qnaIdx)
+	// throws Exception {
+	// QnaDto qnaDto = projectService.qnaDetail(qnaIdx);
+	// if (qnaDto == null) {
+	// return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	// } else {
+	// return ResponseEntity.status(HttpStatus.OK).body(qnaDto);
+	// }
+	// }
 
 	// QNA 작성
 	@PostMapping("/api/qna/write")
@@ -143,10 +147,14 @@ public class ApiController {
 		}
 	}
 
-	// QNA 페이징
-	@GetMapping("/api/qnalistbypage/{pages}")
-	public ResponseEntity<List<QnaDto>> listQnaDtoByPages(@PathVariable("pages") int pages) throws Exception {
-		List<QnaDto> QnaDto = projectService.listQnaDtoByPages(pages);
+	// QNA 페이징 및 검색
+	@GetMapping("/api/qnalistbypage")
+	public ResponseEntity<List<QnaDto>> listQnaDtoByPages(@RequestParam("pages") int pages,
+			@RequestParam("search") String search) throws Exception {
+
+		String decodeSearch = URLDecoder.decode(search, "UTF-8");
+		List<QnaDto> QnaDto = projectService.listQnaDtoByPages(pages, decodeSearch);
+
 		if (QnaDto == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		} else {
@@ -156,22 +164,34 @@ public class ApiController {
 
 	// QNA 페이지수 조회
 	@GetMapping("/api/qnapagecount")
-	public ResponseEntity<Integer> listQnaDtoPageCount() throws Exception {
-		int pCount = projectService.listQnaDtoPageCount();
+	public ResponseEntity<Integer> listPageCount(@RequestParam("pages") int pages,
+			@RequestParam("search") String search) throws Exception {
+		String decodeSearch = URLDecoder.decode(search, "UTF-8");
+
+		int pCount = projectService.listQnaDtoSearchPageCount(decodeSearch);
 
 		return ResponseEntity.status(HttpStatus.OK).body(pCount);
 	}
 
+	// QNA 페이지수 조회
+//	@GetMapping("/api/qnapagecounts")
+//	public ResponseEntity<Integer> listQnaDtoPageCount(@RequestParam("pages") int pages) throws Exception {
+//
+//		
+//		int pCount1 = projectService.listQnaDtoPageCount();
+//
+//		return ResponseEntity.status(HttpStatus.OK).body(pCount1);
+//	}
+
 	// QNA 상세페이지 COMMENTS 리스트
 	@GetMapping("/api/qna/{qnaIdx}")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> qnaDetail(@PathVariable("qnaIdx") int qnaIdx)
-			throws Exception {
+	public ResponseEntity<Map<String, Object>> qnaDetail(@PathVariable("qnaIdx") int qnaIdx) throws Exception {
 		List<QnaCommentDto> list = projectService.selectCommentList(qnaIdx);
 		QnaDto qnaDto = projectService.selectQnaInfo(qnaIdx);
 
 		Map<String, Object> result = new HashMap<>();
-		
+
 		result.put("selectCommentList", list);
 		result.put("selectQnaInfo", qnaDto);
 		if (result != null && result.size() > 0) {
@@ -180,7 +200,6 @@ public class ApiController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
-	
 
 	// QNA COMMENTS 등록
 	@PostMapping("/api/qna/comments/write/{qnaIdx}")
@@ -208,6 +227,78 @@ public class ApiController {
 			result.put("message", "등록 중 오류가 발생했습니다.");
 			result.put("count", insertedCount);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+		}
+	}
+
+	// Accompany 페이징 및 검색
+	@GetMapping("/api/accompanylistbypage")
+	public ResponseEntity<List<AccompanyDto>> listAccompanyDtoByPages(@RequestParam("pages") int pages,
+			@RequestParam("search") String search, @RequestParam("accompanyRegion") String accompanyRegion) throws Exception {
+
+		String decodeSearch = URLDecoder.decode(search, "UTF-8");
+		List<AccompanyDto> AccompanyDto = projectService.listAccompanyDtoByPages(pages, decodeSearch, accompanyRegion);
+
+		if (AccompanyDto == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(AccompanyDto);
+		}
+	}
+
+	// Accompany 페이지 수 조회
+	@GetMapping("/api/accompanypagecount")
+	public ResponseEntity<Integer> listAccompanyDtoPageCount(@RequestParam("pages") int pages,
+			@RequestParam("search") String search, @RequestParam("accompanyRegion") String accompanyRegion) throws Exception {
+		String decodeSearch = URLDecoder.decode(search, "UTF-8");
+
+		int pCount = projectService.listAccompanyDtoSearchPageCount(decodeSearch);
+
+		return ResponseEntity.status(HttpStatus.OK).body(pCount);
+	}
+
+	// Accompany 상세페이지 조회
+	@GetMapping("/api/accompany/{accompanyIdx}")
+	public ResponseEntity<AccompanyDto> accompanyDetail(@PathVariable("accompanyIdx") int accompanyIdx) throws Exception {
+		AccompanyDto accompanyDto = projectService.accompanyDetail(accompanyIdx);
+		if (accompanyDto == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(accompanyDto);
+		}
+	}
+
+	// Accompany 작성
+	@PostMapping("/api/accompany/write")
+	public ResponseEntity<String> insertAccompany(@RequestBody AccompanyDto accompanyDto) throws Exception {
+		int insertedCount = projectService.insertAccompany(accompanyDto);
+		if (insertedCount != 1) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성을 실패하였습니다");
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body("작성을 성공하였습니다");
+		}
+	}
+
+	// Accompany 삭제
+	@DeleteMapping("/api/accompany/{accompanyIdx}")
+	public ResponseEntity<Integer> deleteAccompany(@PathVariable("accompanyIdx") int accompanyIdx) throws Exception {
+		int deletedCount = projectService.deleteAccompany(accompanyIdx);
+		if (deletedCount != 1) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(deletedCount);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(deletedCount);
+		}
+	}
+
+	// Accompany 수정
+	@PutMapping("/api/accompany/update/{accompanyIdx}")
+	public ResponseEntity<Integer> updateAccompany(@PathVariable("accompanyIdx") int accompanyIdx,
+			@RequestBody AccompanyDto accompanyDto) throws Exception {
+		accompanyDto.setAccompanyIdx(accompanyIdx);
+		int updatedCount = projectService.updateAccompany(accompanyDto);
+		if (updatedCount != 1) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(updatedCount);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(updatedCount);
 		}
 	}
 
