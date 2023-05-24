@@ -110,8 +110,8 @@ public class ProjectService {
 	}
 
 	// Accompany 페이지 수 조회
-	public int listAccompanyDtoSearchPageCount(String search) throws Exception {
-		return mapper.listAccompanyDtoSearchPageCount(search);
+	public int listAccompanyDtoSearchPageCount(String search, String accompanyRegion) throws Exception {
+		return mapper.listAccompanyDtoSearchPageCount(search, accompanyRegion);
 	}
 
 	// Accompany  상세페이지 조회 및 조회수 증가

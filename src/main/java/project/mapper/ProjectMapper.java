@@ -64,7 +64,7 @@ public interface ProjectMapper {
 			throws Exception;
 
 	// Accompany 페이지 수 조회
-	public int listAccompanyDtoSearchPageCount(@Param("search") String search) throws Exception;
+	public int listAccompanyDtoSearchPageCount(@Param("search") String search, @Param("accompanyRegion") String accompanyRegion) throws Exception;
 
 	// Accompany 상세페이지 조회
 	public AccompanyDto accompanyDetail(int accompanyIdx) throws Exception;
