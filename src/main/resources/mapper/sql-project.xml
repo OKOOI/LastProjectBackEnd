@@ -193,7 +193,7 @@
 	
 	<!-- Accompany 상세페이지 조회 -->
 	<select id="accompanyDetail" parameterType="int" resultType="project.dto.AccompanyDto"> 
-		select accompany_idx, accompany_title, accompany_image, accompany_content, accompany_numbers, accompany_cnt, accompany_region,
+		select accompany_idx, accompany_title, accompany_image, accompany_content, accompany_numbers, accompany_cnt, accompany_region, user_id,
 			   date_format(accompany_start_time, '%Y.%m.%d' ) as accompany_start_time ,
 			   date_format(accompany_end_time, '%Y.%m.%d' ) as accompany_end_time ,
 		       date_format(accompany_created_time, '%Y.%m.%d %H:%i' ) as accompany_created_time 
